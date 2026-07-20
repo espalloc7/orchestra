@@ -87,8 +87,26 @@ if (statuslineNeedsSetup()) {
     'Offer to set this up, once, on first interaction — do not raise it again if declined.';
 }
 
+/**
+ * Which copy of the plugin is actually running?
+ *
+ * A local marketplace install copies the source into a versioned cache directory rather
+ * than linking it, so edits to a working tree do not reach the installed hook until the
+ * plugin is reinstalled. Printing the version makes that split visible: if this does not
+ * match the version you just edited, you are looking at a stale install.
+ */
+function version() {
+  try {
+    const manifest = path.join(__dirname, '..', '.claude-plugin', 'plugin.json');
+    return JSON.parse(fs.readFileSync(manifest, 'utf8')).version || 'unknown';
+  } catch (e) {
+    return 'unknown';
+  }
+}
+
 process.stdout.write(
-  'ORCHESTRA ACTIVE — route-based delegation. Follow these rules for every task.\n\n' +
+  'ORCHESTRA ACTIVE v' + version() +
+    ' — route-based delegation. Follow these rules for every task.\n\n' +
     rules +
     '\n\n---\n\n' +
     codexNote +

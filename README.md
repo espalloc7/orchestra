@@ -101,6 +101,27 @@ launching shell's environment through to hook subprocesses — `ORCHESTRA_OFF=1 
 looks like it should work and silently does not. The variable is still honoured if your
 setup does export it into hooks, but the flag file is the switch that always works.
 
+## Developing
+
+A local marketplace install **copies** the source into a versioned cache directory —
+it does not link it. Editing your working tree therefore changes nothing about the
+running plugin until you reinstall:
+
+```
+/plugin marketplace update orchestra
+/plugin install orchestra@orchestra
+/reload-plugins
+```
+
+This is easy to get wrong in a way that hides itself, so the activation line reports the
+running version (`ORCHESTRA ACTIVE v1.1.0`). If that does not match the version in
+`.claude-plugin/plugin.json`, the installed copy is stale and nothing you edited is live.
+
+For the same reason, point `statusLine` at the **installed** copy rather than your
+working tree. Running one from the cache and the other from source produces two
+different code paths that silently disagree. When a version bump moves the cache path,
+the activation hook notices the stale path and offers the new one.
+
 ## Layout
 
 ```
