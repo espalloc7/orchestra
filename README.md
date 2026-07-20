@@ -51,6 +51,17 @@ the `codex:codex-rescue` subagent. Most `/codex:` commands are marked
 `disable-model-invocation` and are listed separately as yours to type, so the lead stops
 reaching for a route it cannot take.
 
+## Staying loaded
+
+The full rules load once, at session start. In a long session they sink under everything
+that came after and compaction can summarise them away — which is when routing quietly
+decays back into "the lead does it".
+
+So a one-line reminder prints on each prompt: the ordered route list, the Codex call, and
+when the `Route:` header is required. It is capped small on purpose — under 400
+characters, tested — because it repeats every turn. It names only the routes this machine
+actually has, and `/orchestra:off` silences it along with the rules.
+
 ## Statusline badge
 
 Optional `[ORCHESTRA]` / `[ORCHESTRA+codex]` badge. You do not need to find any paths —
@@ -121,6 +132,7 @@ agents/              deep-reasoner, fast-worker
 commands/            /orchestra:status, :on, :off
 hooks/
   activate.js        reads the rules, detects Codex, injects both
+  remind.js          one-line route reminder on each prompt
   state.js           shared: codex detection, on/off flag
   statusline.js      optional badge
 rules/

@@ -16,6 +16,7 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 const ACTIVATE = path.join(ROOT, 'hooks', 'activate.js');
+const REMIND = path.join(ROOT, 'hooks', 'remind.js');
 const STATUSLINE = path.join(ROOT, 'hooks', 'statusline.js');
 const CLI = path.join(ROOT, 'scripts', 'orchestra.js');
 
@@ -66,6 +67,9 @@ class Fixture {
 
   activate() {
     return this.run(ACTIVATE);
+  }
+  remind() {
+    return this.run(REMIND);
   }
   statusline() {
     return this.run(STATUSLINE);
@@ -130,6 +134,37 @@ test('the codex row reflects availability in the table itself', (f) => {
 test('malformed settings do not crash activation', (f) => {
   f.write('settings.json', '{ this is not json');
   assert.match(f.activate(), /ORCHESTRA ACTIVE/);
+});
+
+// ---------------------------------------------------------------- reminder
+
+test('the reminder names the ordered route list', (f) => {
+  const out = f.remind();
+  assert.match(out, /first match wins/i);
+  assert.match(out, /orchestra:fast-worker/);
+  assert.match(out, /lead direct/);
+});
+
+test('the reminder tracks codex availability', (f) => {
+  assert.match(f.withCodex().remind(), /codex:codex-rescue/);
+  assert.doesNotMatch(f.settings({}).remind(), /codex/i);
+});
+
+// This runs on every prompt, so its cost is paid continuously. A reminder that grows
+// into a second copy of the rules is worse than no reminder at all.
+test('the reminder stays small enough to repeat every turn', (f) => {
+  const out = f.withCodex().remind();
+  assert.ok(out.length < 400, 'reminder grew to ' + out.length + ' chars');
+});
+
+test('off flag silences the reminder', (f) => {
+  f.write('.orchestra-off', 'off\n');
+  assert.strictEqual(f.remind().trim(), '');
+});
+
+test('malformed settings do not crash the reminder', (f) => {
+  f.write('settings.json', '{ this is not json');
+  assert.match(f.remind(), /\[orchestra\]/);
 });
 
 // ------------------------------------------------------------------- off switch
