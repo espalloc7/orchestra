@@ -168,6 +168,22 @@ test('cli status reports state and codex', (f) => {
 
 // Regression: the badge ran from a working tree while the hook ran from the installed
 // copy, so fixes landed in one and not the other and nothing reported the split.
+test('activation records the copy it ran from', (f) => {
+  f.activate();
+  const recorded = fs.readFileSync(path.join(f.dir, '.orchestra-last-root'), 'utf8').trim();
+  assert.strictEqual(path.resolve(recorded), path.resolve(ROOT));
+});
+
+test('cli status confirms hook and command share a copy', (f) => {
+  f.activate();
+  assert.match(f.cli('status'), /hook\s+same copy/);
+});
+
+test('cli status flags hook running from a different copy', (f) => {
+  f.write('.orchestra-last-root', path.join('/somewhere', 'else') + '\n');
+  assert.match(f.cli('status'), /hook\s+DIFFERENT COPY/);
+});
+
 test('cli status flags a statusline pointing at another copy', (f) => {
   f.settings({ statusLine: { type: 'command', command: 'node "/somewhere/else/hooks/statusline.js"' } });
   assert.match(f.cli('status'), /MISMATCH|BROKEN/);

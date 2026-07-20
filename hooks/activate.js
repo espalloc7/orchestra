@@ -13,6 +13,24 @@ const fs = require('fs');
 const path = require('path');
 const { claudeDir, codexAvailable, orchestraOff } = require('./state');
 
+/**
+ * Record which copy of the plugin this hook ran from.
+ *
+ * Commands and hooks do not necessarily resolve CLAUDE_PLUGIN_ROOT to the same place —
+ * a directory-sourced marketplace keeps a cache copy alongside the working tree — and a
+ * split between the two is invisible until their code diverges and they disagree.
+ * Writing the root here lets /orchestra:status compare it against its own instead of
+ * anyone having to guess.
+ */
+try {
+  fs.writeFileSync(
+    path.join(claudeDir, '.orchestra-last-root'),
+    path.join(__dirname, '..') + '\n'
+  );
+} catch (e) {
+  // Diagnostics must never block session start.
+}
+
 if (orchestraOff()) {
   process.stdout.write('OK');
   process.exit(0);

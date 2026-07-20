@@ -54,12 +54,29 @@ function statuslineHealth() {
   return 'not configured';
 }
 
+/**
+ * Did the last session's activation hook run from the same copy as this command?
+ *
+ * The hook records its own root; if it differs from ours, the rules and the commands are
+ * two different code bases and will disagree the moment they diverge.
+ */
+function hookRoot() {
+  try {
+    const recorded = fs.readFileSync(path.join(claudeDir, '.orchestra-last-root'), 'utf8').trim();
+    if (path.resolve(recorded) === path.resolve(ROOT)) return 'same copy as this command';
+    return 'DIFFERENT COPY — rules load from:\n             ' + recorded;
+  } catch (e) {
+    return 'unknown — no session has started since this was installed';
+  }
+}
+
 function status() {
   const lines = [
     'orchestra   ' + version(),
     'state       ' + (orchestraOff() ? 'OFF' : 'on'),
     'rules       ' + rulesSize() + ' chars',
     'install     ' + ROOT,
+    'hook        ' + hookRoot(),
     'statusline  ' + statuslineHealth(),
     'codex       ' + (codexAvailable() ? 'detected — Codex route available' : 'not installed — Codex route disabled'),
   ];

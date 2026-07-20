@@ -59,9 +59,9 @@ being crowded out.
 /orchestra:on       resume
 ```
 
-`status` is the first thing to run when something seems off — it catches the two
-failures that hide themselves: a stale install, and a statusline running from a
-different copy of the plugin than the rules.
+`status` is the first thing to run when something seems off. It catches the failures that
+hide themselves: a stale install, and the rules, the commands or the badge running from
+different copies of the plugin — which look fine until those copies diverge.
 
 On and off take effect at the next session start, since the rules are injected when a
 session begins.
@@ -73,8 +73,12 @@ no rule text hidden in the JavaScript. Fork, edit that file, install from your f
 
 ## Developing
 
-Installing from a local directory **copies** the source into a versioned cache; it does
-not link it. Your edits do nothing until you reinstall:
+Installing from a local directory keeps a versioned copy in the plugin cache alongside
+your working tree. Which one actually runs is not something to assume — run
+`/orchestra:status` and read the `install` and `hook` lines. Point `statusLine` at the
+path `install` reports, so the badge, the commands and the rules are one code base.
+
+After editing, reinstall:
 
 ```
 /plugin marketplace update orchestra
