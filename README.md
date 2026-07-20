@@ -13,12 +13,10 @@ reasoning stops being skipped on the calls that deserve it.
 ## Install
 
 ```
-/plugin marketplace add YOUR-GH-USER/orchestra
+/plugin marketplace add espalloc7/orchestra
 /plugin install orchestra@orchestra
 /reload-plugins
 ```
-
-> Replace `YOUR-GH-USER` with the GitHub account hosting this repo.
 
 That is the whole setup. The rules load automatically at the start of every session, in
 every project — there is nothing to paste into a `CLAUDE.md`.
