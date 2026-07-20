@@ -69,6 +69,24 @@ Do not loop. When a route fails twice on the same task:
 2. second failure → escalate one level (fast-worker → lead, lead → deep-reasoner)
 3. third → stop and report the blocker to the user, with what was already tried
 
+## Root cause, not workaround
+
+Fix the cause, not the symptom. A change that makes a failure disappear without
+explaining why it appeared is not a fix — it is a second bug wearing the first one's
+clothes.
+
+State the actual cause before proposing the fix. If you cannot name it, say so and keep
+digging rather than shipping a guess.
+
+Verify the thing that actually runs. Testing a copy of the code that the failure did not
+come from will report success and teach you nothing.
+
+## Skills
+
+Before doing something by hand, check whether an available skill already covers it — it
+was configured for exactly this case. Invoke it instead of improvising a parallel
+approach.
+
 ## Before execution
 
 * short plan
@@ -77,6 +95,10 @@ Do not loop. When a route fails twice on the same task:
 * confirmation when the task is broad, risky, destructive, or ambiguous
 
 Do not execute broad or risky changes before the user confirms.
+
+When a requirement is genuinely unclear, ask with AskUserQuestion rather than picking an
+interpretation and building on it — a wrong assumption costs more the later it surfaces.
+Do not ask about what you can settle from the code, the request, or an obvious default.
 
 ## After execution
 

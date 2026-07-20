@@ -32,10 +32,11 @@ project — nothing to paste into a `CLAUDE.md`.
 Ships two agents: `deep-reasoner` (opus, high effort) and `fast-worker` (sonnet, low
 effort) — effort follows the route, not the session.
 
-Also enforced: an escalation ladder instead of retry loops, parallel delegation in one
-message, no accepting delegated output without review, and confirmation before broad or
-destructive changes. The `Route:` / `Reason:` header shows up when work happens, not on
-plain questions.
+Also enforced: root cause over symptom patching, asking instead of assuming, reaching
+for an existing skill before improvising, an escalation ladder instead of retry loops,
+parallel delegation in one message, no accepting delegated output without review, and
+confirmation before broad or destructive changes. The `Route:` / `Reason:` header shows
+up when work happens, not on plain questions.
 
 **Codex** is optional. That route lights up only if the
 [openai-codex](https://github.com/openai/codex-plugin-cc) plugin is installed; without
@@ -80,7 +81,7 @@ not link it. Your edits do nothing until you reinstall:
 /reload-plugins
 ```
 
-The activation line reports the running version (`ORCHESTRA ACTIVE v1.1.0`). If it does
+The activation line reports the running version (`ORCHESTRA ACTIVE v1.2.0`). If it does
 not match `.claude-plugin/plugin.json`, your install is stale.
 
 ## Layout
