@@ -1,0 +1,22 @@
+{
+  "name": "orchestra",
+  "version": "1.0.0",
+  "description": "Route-based delegation for Claude Code. The main session leads and routes; specialist agents do the work.",
+  "author": {
+    "name": "ozis"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/activate.js\"",
+            "timeout": 5,
+            "statusMessage": "Loading orchestration rules..."
+          }
+        ]
+      }
+    ]
+  }
+}

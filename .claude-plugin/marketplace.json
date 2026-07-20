@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "orchestra",
+  "description": "Route-based delegation for Claude Code: plan, route, delegate, review, decide.",
+  "owner": {
+    "name": "ozis"
+  },
+  "plugins": [
+    {
+      "name": "orchestra",
+      "description": "The main session leads and routes; specialist agents do the work. Ships deep-reasoner and fast-worker.",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}
