@@ -78,34 +78,28 @@ The rules are plain markdown in [`rules/orchestration.md`](rules/orchestration.m
 at session start. Fork the repo, edit that file, and reinstall from your fork. There is
 no rule text hidden in the JavaScript.
 
-To silence orchestra for one session without uninstalling, set `ORCHESTRA_OFF=1` in the
-environment `claude` starts in.
+To silence orchestra without uninstalling, create a flag file in your Claude config
+directory. The rules stop loading and the badge disappears; delete the file to switch
+back on.
+
+PowerShell:
+
+```powershell
+New-Item -ItemType File "$env:USERPROFILE\.claude\.orchestra-off"   # off
+Remove-Item "$env:USERPROFILE\.claude\.orchestra-off"               # on
+```
 
 bash / zsh:
 
 ```sh
-ORCHESTRA_OFF=1 claude
+touch ~/.claude/.orchestra-off   # off
+rm ~/.claude/.orchestra-off      # on
 ```
 
-PowerShell — it has no inline environment-variable prefix, so the variable has to be set
-as its own statement and then cleared:
-
-```powershell
-$env:ORCHESTRA_OFF = "1"; claude; Remove-Item Env:ORCHESTRA_OFF
-```
-
-cmd.exe:
-
-```bat
-set ORCHESTRA_OFF=1 && claude
-```
-
-If the variable does not reach the hook in your setup, disable the plugin instead — that
-path does not depend on environment inheritance:
-
-```
-/plugin
-```
+A file rather than an environment variable, because Claude Code does not pass the
+launching shell's environment through to hook subprocesses — `ORCHESTRA_OFF=1 claude`
+looks like it should work and silently does not. The variable is still honoured if your
+setup does export it into hooks, but the flag file is the switch that always works.
 
 ## Layout
 
@@ -116,7 +110,7 @@ path does not depend on environment inheritance:
 agents/              deep-reasoner, fast-worker
 hooks/
   activate.js        reads the rules, detects Codex, injects both
-  detect-codex.js    shared plugin detection
+  state.js           shared: codex detection, on/off flag
   statusline.js      optional badge
 rules/
   orchestration.md   the actual rules — single source of truth

@@ -7,13 +7,13 @@
 // The rules live in markdown rather than in this file so that the shipped text has a
 // single source of truth that can be read and reviewed without reading JavaScript.
 //
-// Set ORCHESTRA_OFF=1 to disable injection for a session.
+// Create $CLAUDE_CONFIG_DIR/.orchestra-off to disable injection.
 
 const fs = require('fs');
 const path = require('path');
-const { claudeDir, codexAvailable } = require('./detect-codex');
+const { claudeDir, codexAvailable, orchestraOff } = require('./state');
 
-if (process.env.ORCHESTRA_OFF === '1') {
+if (orchestraOff()) {
   process.stdout.write('OK');
   process.exit(0);
 }

@@ -10,7 +10,11 @@
 
 const fs = require('fs');
 const path = require('path');
-const { claudeDir, codexAvailable } = require('./detect-codex');
+const { claudeDir, codexAvailable, orchestraOff } = require('./state');
+
+// Switched off means no badge. A badge claiming orchestra is active while the rules are
+// not loaded is worse than no badge at all.
+if (orchestraOff()) process.exit(0);
 
 const ORCHESTRA_COLOR = '\x1b[38;5;39m'; // blue — distinct from caveman's orange
 const CAVEMAN_COLOR = '\x1b[38;5;172m';
