@@ -98,6 +98,35 @@ test('codex absent is reported as unavailable', (f) => {
   assert.doesNotMatch(out, /CODEX ROUTE: AVAILABLE/);
 });
 
+// Regression: the rules advertised /codex: slash commands, but every one except rescue
+// is marked disable-model-invocation and rescue must not be entered as a skill — so the
+// lead could see the Codex route and had no way to take it. It fell through to another
+// row instead, silently.
+test('the codex route names an invocation the lead can actually make', (f) => {
+  const out = f.withCodex().activate();
+  assert.match(out, /Agent\(subagent_type: "codex:codex-rescue"\)/, 'must name the subagent');
+  assert.doesNotMatch(out, /^\s*\/codex:rescue/m, 'must not present rescue as a lead invocation');
+  assert.match(out, /cannot run them/, 'user-only commands must be marked as such');
+});
+
+test('the route table carries exact subagent identifiers', (f) => {
+  const out = f.activate();
+  assert.match(out, /orchestra:fast-worker/);
+  assert.match(out, /orchestra:deep-reasoner/);
+});
+
+// The Codex row's status is resolved inside the table, where the routing decision is
+// made. An unresolved placeholder there would read as a literal instruction.
+test('the codex status placeholder is always resolved', (f) => {
+  assert.doesNotMatch(f.withCodex().activate(), /\{\{CODEX_STATUS\}\}/);
+  assert.doesNotMatch(f.settings({}).activate(), /\{\{CODEX_STATUS\}\}/);
+});
+
+test('the codex row reflects availability in the table itself', (f) => {
+  assert.match(f.withCodex().activate(), /\|.*codex:codex-rescue.*\|/, 'row should carry the call');
+  assert.match(f.settings({}).activate(), /UNAVAILABLE in this install/);
+});
+
 test('malformed settings do not crash activation', (f) => {
   f.write('settings.json', '{ this is not json');
   assert.match(f.activate(), /ORCHESTRA ACTIVE/);

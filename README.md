@@ -20,14 +20,18 @@ project — nothing to paste into a `CLAUDE.md`.
 
 ## Routes
 
-| Route | For |
-|---|---|
-| lead direct | planning, review, quality calls, edits too small to brief |
-| Explore | read-only fan-out: where is X, which files touch Y |
-| fast-worker | boilerplate, tests, formatting, small well-specified edits |
-| deep-reasoner | second opinion before a risky change; root cause on a clean context |
-| Codex | well-specified implementation, verification, independent review *(optional)* |
-| no action | already done, wrong premise, or blocked on you |
+Routes are an ordered list, not a menu — the first matching row wins, and skipping past
+one for something cheaper needs a concrete reason. Ties between overlapping rows are
+settled by explicit rules rather than by taste.
+
+| # | Route | Matches when |
+|---|---|---|
+| 1 | no action | already done, wrong premise, or blocked on you |
+| 2 | deep-reasoner | contested call, risky change, or the lead already failed once |
+| 3 | Explore | read-only fan-out: where is X, which files touch Y |
+| 4 | Codex | specifiable implementation across files, verification, independent review *(optional)* |
+| 5 | fast-worker | boilerplate, tests, formatting, small well-specified edits |
+| 6 | lead direct | planning, review, quality calls, edits too small to brief |
 
 Ships two agents: `deep-reasoner` (opus, high effort) and `fast-worker` (sonnet, low
 effort) — effort follows the route, not the session.
@@ -41,6 +45,11 @@ up when work happens, not on plain questions.
 **Codex** is optional. That route lights up only if the
 [openai-codex](https://github.com/openai/codex-plugin-cc) plugin is installed; without
 it the work routes to the lead and you are never told to run commands you do not have.
+
+When it is installed, the rules hand the lead the one invocation it can actually make —
+the `codex:codex-rescue` subagent. Most `/codex:` commands are marked
+`disable-model-invocation` and are listed separately as yours to type, so the lead stops
+reaching for a route it cannot take.
 
 ## Statusline badge
 
@@ -70,6 +79,10 @@ session begins.
 
 The rules are plain markdown in [`rules/orchestration.md`](rules/orchestration.md) —
 no rule text hidden in the JavaScript. Fork, edit that file, install from your fork.
+
+One token in that file is substituted at load time: `{{CODEX_STATUS}}`, in the Codex row,
+becomes either the invocation to use or a note that the route is absent. Keep it if you
+want the route table to state its own availability where the decision is made.
 
 ## Developing
 

@@ -16,24 +16,45 @@ The lead does not do mechanical work when a route exists for it:
 
 * broad file scanning → Explore
 * repetitive edits, boilerplate, routine tests, formatting → fast-worker
+* well-specified implementation across more than one file → Codex
 * running tests or builds purely to see whether they pass → Bash
-
-Doing it yourself is *correct* when delegating would cost more than the work. Say so in
-one clause and move on — that is a routing decision, not a violation of it.
 
 ## Routes
 
-| Route | Use for |
-|---|---|
-| **lead direct** | planning, decomposition, final review, quality calls, product and architecture direction, and small edits where writing a brief costs more than making the change |
-| **Explore** | read-only fan-out: where is X, which files touch Y, naming-convention sweeps. Returns conclusions, not file dumps |
-| **fast-worker** | boilerplate, tests for already-understood behavior, formatting, small well-specified edits, mechanical refactors |
-| **deep-reasoner** | isolated second opinion before a risky or expensive change; root-cause work that needs a clean context. *Not* every architecture decision — the lead decides unless the call is genuinely contested or the lead has already failed once |
-| **Codex** | well-specified implementation, terminal and UI verification, test/lint/build checks, independent engineering review. Availability is reported at the end of these rules |
-| **no action** | already done, wrong premise, or blocked on a user decision |
+Run down this list and take the **first** row that matches. Do not shop past a matching
+row for a cheaper one — that is how every task silently becomes `lead direct`.
 
-Prefer delegation when a task clearly matches a route. When you skip it, one clause of
-justification is enough.
+| # | Route | Matches when |
+|---|---|---|
+| 1 | **no action** | already done, wrong premise, or blocked on a user decision |
+| 2 | **deep-reasoner** | the call is genuinely contested, the change is risky or expensive, or the lead has already failed once on this task. *Not* every architecture decision — the lead decides by default |
+| 3 | **Explore** | the answer requires reading across many files: where is X, which files touch Y, naming-convention sweeps. Returns conclusions, not file dumps |
+| 4 | **Codex** | implementation you can fully specify, spanning more than one file or needing terminal/build/UI verification; or an independent engineering review of work already done. {{CODEX_STATUS}} |
+| 5 | **fast-worker** | mechanical work whose target shape is already decided: boilerplate, tests for understood behavior, formatting, renames, a small well-specified edit |
+| 6 | **lead direct** | planning, decomposition, final review, quality calls, product and architecture direction — and edits where the diff is genuinely smaller than the brief would be: one file, no design choice |
+
+Exact identifiers, so a route is never skipped over a guessed name:
+
+| Route | How the lead invokes it |
+|---|---|
+| Explore | `Agent(subagent_type: "Explore")` |
+| fast-worker | `Agent(subagent_type: "orchestra:fast-worker")` |
+| deep-reasoner | `Agent(subagent_type: "orchestra:deep-reasoner")` |
+| Codex | see the availability block at the end of these rules |
+
+### Tiebreaks
+
+Rows overlap. When two match, these decide:
+
+* **Codex vs fast-worker** — more than one file, or the result needs a build, test or
+  terminal run to be believed → Codex. Single file, mechanical, no verification beyond
+  the obvious → fast-worker.
+* **Codex vs deep-reasoner** — need a *decision* or a *root cause* → deep-reasoner. Need
+  code written, or existing code independently checked → Codex.
+* **anything vs lead direct** — `lead direct` is row 6 for a reason. Choosing it over a
+  matching row above requires a concrete reason ("one file, three lines"), not a
+  preference. "Faster if I just do it" is not a reason; it is the thing this list exists
+  to stop.
 
 All delegated results come back to the lead before acceptance.
 
@@ -116,10 +137,13 @@ Route: [route]
 Reason: [one sentence]
 ```
 
-**Skip the header** for pure Q&A, explanation, reading, or a single trivial edit — the
-ceremony is for work, not for conversation.
+**Require it** whenever files change, work is delegated, the task is multi-step, or the
+answer required reading the codebase. Investigation is work — a task does not stop
+needing a routing decision by being answered in prose.
 
-**Require it** whenever files change, work is delegated, or the task is multi-step.
+**Skip the header** only for conversation: a question answered from what is already in
+context, or a single trivial edit. If you have to argue that a task counts as
+"explanation", it does not.
 
 ## Effort
 

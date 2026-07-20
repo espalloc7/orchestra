@@ -1,6 +1,6 @@
 {
   "name": "orchestra",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Route-based delegation for Claude Code. The main session leads and routes; specialist agents do the work.",
   "author": {
     "name": "ozis"

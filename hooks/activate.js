@@ -45,30 +45,61 @@ try {
   process.exit(0);
 }
 
-const codexNote = codexAvailable()
+const codex = codexAvailable();
+
+/**
+ * The Codex route's invocation mechanism.
+ *
+ * Most /codex: commands are marked disable-model-invocation, so the lead cannot run
+ * them at all, and the plugin's own rescue command warns that invoking it as a skill
+ * re-enters the command and hangs the session. That leaves exactly one path the lead
+ * can take. Advertising the others produced a route the lead could see but never use,
+ * which it resolved by quietly falling through to another row.
+ */
+const codexNote = codex
   ? [
       'CODEX ROUTE: AVAILABLE — the openai-codex plugin is installed.',
       '',
-      'Invocation:',
-      '  /codex:rescue              implementation, investigation, fixes',
+      'How the lead invokes it. This is the only mechanism that works:',
+      '',
+      '  Agent(subagent_type: "codex:codex-rescue")   prompt = the delegation brief',
+      '',
+      '  - Codex is write-capable by default and edits the working tree. Open the',
+      '    prompt with "review only" or "diagnose only" when you do not want edits.',
+      '  - Do NOT call Skill("codex:rescue") — it re-enters the slash command and hangs',
+      '    the session. Skill("codex:codex-rescue") does not exist.',
+      '',
+      'These are user-typed slash commands, marked disable-model-invocation. The lead',
+      'cannot run them. Suggest them to the user; never attempt them yourself:',
+      '',
       '  /codex:review              code review of local git state',
       '  /codex:adversarial-review  challenge the approach, not the code',
       '  /codex:status | :result | :cancel   job control',
       '',
-      'Two properties that change how you use this route:',
-      '  - rescue is write-capable by default; Codex edits the working tree. Say',
-      '    "review only" or "diagnose only" when you do not want edits.',
-      '  - the codex-rescue subagent is a thin forwarder. It does not read the repo,',
-      '    verify, or summarize. The review obligation is entirely the lead\'s —',
-      '    nothing upstream is checking Codex\'s work.',
+      'The codex-rescue subagent is a thin forwarder. It does not read the repo, verify,',
+      'or summarize. The review obligation is entirely the lead\'s — nothing upstream is',
+      'checking Codex\'s work.',
     ].join('\n')
   : [
       'CODEX ROUTE: UNAVAILABLE — the openai-codex plugin is not installed here.',
-      'Treat the Codex row in the route table as absent. Route that work to lead direct',
-      'or fast-worker instead, and do not tell the user to run /codex: commands.',
+      'Treat the Codex row in the route table as absent and fall through to the next',
+      'matching row. Do not tell the user to run /codex: commands.',
       '',
       'To enable it: /plugin marketplace add openai/codex-plugin-cc',
     ].join('\n');
+
+/**
+ * Resolve the Codex row's status marker inside the route table itself.
+ *
+ * The table used to forward-reference a block printed after the rules, which put the
+ * availability of a route somewhere other than the place the routing decision is made.
+ */
+rules = rules.replace(
+  /\{\{CODEX_STATUS\}\}/g,
+  codex
+    ? 'Invoke with Agent(subagent_type: "codex:codex-rescue"); details at the end of these rules'
+    : 'UNAVAILABLE in this install — skip this row'
+);
 
 /**
  * Should we ask Claude to offer statusline setup?
