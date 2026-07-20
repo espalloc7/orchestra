@@ -58,6 +58,20 @@ plugin is installed. The activation hook checks at session start and tells the m
 which case it is in, so nothing breaks if you do not use Codex — that work routes to the
 lead instead, and you will not be told to run commands you do not have.
 
+## Statusline badge
+
+Optional. Renders `[ORCHESTRA]`, or `[ORCHESTRA+codex]` when the Codex route is live —
+a one-glance answer to "did the rules actually load?"
+
+You do not need to find the path yourself: the activation hook detects a missing
+statusline and offers to configure it, with the correct absolute path for your install,
+on your next session. Accept and it is done.
+
+Claude Code allows only one `statusLine` command. If you already have one configured,
+orchestra leaves it alone and never asks again. If you use the
+[caveman](https://github.com/JuliusBrussee/caveman) plugin, its badge is rendered
+alongside orchestra's rather than being crowded out.
+
 ## Customizing
 
 The rules are plain markdown in [`rules/orchestration.md`](rules/orchestration.md), read
@@ -77,7 +91,10 @@ ORCHESTRA_OFF=1 claude
   plugin.json        manifest + SessionStart hook registration
   marketplace.json   lets this repo serve itself as a marketplace
 agents/              deep-reasoner, fast-worker
-hooks/activate.js    reads the rules, detects Codex, injects both
+hooks/
+  activate.js        reads the rules, detects Codex, injects both
+  detect-codex.js    shared plugin detection
+  statusline.js      optional badge
 rules/
   orchestration.md   the actual rules — single source of truth
 ```

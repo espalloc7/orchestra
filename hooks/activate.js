@@ -11,14 +11,12 @@
 
 const fs = require('fs');
 const path = require('path');
-const os = require('os');
+const { claudeDir, codexAvailable } = require('./detect-codex');
 
 if (process.env.ORCHESTRA_OFF === '1') {
   process.stdout.write('OK');
   process.exit(0);
 }
-
-const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
 
 let rules;
 try {
@@ -27,27 +25,6 @@ try {
   // Never block session start over a missing rules file.
   process.stdout.write('OK');
   process.exit(0);
-}
-
-/**
- * Is the openai-codex plugin installed and enabled?
- *
- * Checked against the user's settings files rather than the plugin cache, because a
- * cached-but-disabled plugin does not give us the /codex: commands the rules refer to.
- */
-function codexAvailable() {
-  for (const file of ['settings.json', 'settings.local.json']) {
-    try {
-      const raw = fs.readFileSync(path.join(claudeDir, file), 'utf8');
-      const enabled = JSON.parse(raw).enabledPlugins || {};
-      for (const [key, value] of Object.entries(enabled)) {
-        if (value === true && /codex/i.test(key)) return true;
-      }
-    } catch (e) {
-      // Missing or malformed file just means "no evidence here" — keep looking.
-    }
-  }
-  return false;
 }
 
 const codexNote = codexAvailable()
@@ -75,9 +52,45 @@ const codexNote = codexAvailable()
       'To enable it: /plugin marketplace add openai/codex-plugin-cc',
     ].join('\n');
 
+/**
+ * Should we ask Claude to offer statusline setup?
+ *
+ * Fires when no statusLine is configured at all, and also when one is configured but
+ * points at an orchestra statusline that no longer exists — the version directory in a
+ * plugin install path changes on upgrade, which would otherwise leave a silently blank
+ * badge and no prompt to fix it.
+ */
+function statuslineNeedsSetup() {
+  for (const file of ['settings.json', 'settings.local.json']) {
+    try {
+      const settings = JSON.parse(fs.readFileSync(path.join(claudeDir, file), 'utf8'));
+      const command = settings.statusLine && settings.statusLine.command;
+      if (!command) continue;
+      const match = /([^"']*statusline\.js)/i.exec(command);
+      if (match && !fs.existsSync(match[1])) return true; // stale orchestra path
+      return false; // some statusline is configured; leave the user's choice alone
+    } catch (e) {
+      // Unreadable settings — no evidence either way, keep looking.
+    }
+  }
+  return true;
+}
+
+let setupNote = '';
+if (statuslineNeedsSetup()) {
+  const command = 'node "' + path.join(__dirname, 'statusline.js') + '"';
+  setupNote =
+    '\n\n---\n\nSTATUSLINE SETUP AVAILABLE: orchestra ships a badge showing that the ' +
+    'rules loaded, and whether the Codex route is live. It is not configured yet. ' +
+    'To enable, add this to ' + path.join(claudeDir, 'settings.json') + ': ' +
+    '"statusLine": { "type": "command", "command": ' + JSON.stringify(command) + ' } ' +
+    'Offer to set this up, once, on first interaction — do not raise it again if declined.';
+}
+
 process.stdout.write(
   'ORCHESTRA ACTIVE — route-based delegation. Follow these rules for every task.\n\n' +
     rules +
     '\n\n---\n\n' +
-    codexNote
+    codexNote +
+    setupNote
 );
