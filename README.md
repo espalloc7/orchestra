@@ -78,10 +78,33 @@ The rules are plain markdown in [`rules/orchestration.md`](rules/orchestration.m
 at session start. Fork the repo, edit that file, and reinstall from your fork. There is
 no rule text hidden in the JavaScript.
 
-To silence orchestra for one session without uninstalling:
+To silence orchestra for one session without uninstalling, set `ORCHESTRA_OFF=1` in the
+environment `claude` starts in.
+
+bash / zsh:
+
+```sh
+ORCHESTRA_OFF=1 claude
+```
+
+PowerShell — it has no inline environment-variable prefix, so the variable has to be set
+as its own statement and then cleared:
+
+```powershell
+$env:ORCHESTRA_OFF = "1"; claude; Remove-Item Env:ORCHESTRA_OFF
+```
+
+cmd.exe:
+
+```bat
+set ORCHESTRA_OFF=1 && claude
+```
+
+If the variable does not reach the hook in your setup, disable the plugin instead — that
+path does not depend on environment inheritance:
 
 ```
-ORCHESTRA_OFF=1 claude
+/plugin
 ```
 
 ## Layout
