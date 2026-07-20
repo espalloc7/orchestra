@@ -2,13 +2,10 @@
 
 Route-based delegation for Claude Code.
 
-The main session **leads**: it understands the goal, plans, picks a route for each task,
-delegates, reviews what comes back, and makes the final call. Specialist agents do the
-work that does not need the lead's judgment.
-
-The point is not "use more agents". The point is that every task gets an explicit
-routing decision, so mechanical work stops consuming deep-reasoning budget and deep
-reasoning stops being skipped on the calls that deserve it.
+The main session **leads**: it plans, picks a route for each task, delegates, reviews
+what comes back, and makes the final call. Specialist agents do the rest. Every task
+gets an explicit routing decision, so mechanical work stops burning deep-reasoning
+budget and deep reasoning stops being skipped where it matters.
 
 ## Install
 
@@ -18,94 +15,64 @@ reasoning stops being skipped on the calls that deserve it.
 /reload-plugins
 ```
 
-That is the whole setup. The rules load automatically at the start of every session, in
-every project — there is nothing to paste into a `CLAUDE.md`.
+That is the whole setup. The rules load at the start of every session, in every
+project — nothing to paste into a `CLAUDE.md`.
 
-## What you get
-
-**Routes.** Every task is assigned one before work starts, and the choice is stated in
-one sentence:
+## Routes
 
 | Route | For |
 |---|---|
-| lead direct | planning, decomposition, review, quality calls, edits too small to brief |
+| lead direct | planning, review, quality calls, edits too small to brief |
 | Explore | read-only fan-out: where is X, which files touch Y |
 | fast-worker | boilerplate, tests, formatting, small well-specified edits |
-| deep-reasoner | isolated second opinion before a risky change; root cause on a clean context |
-| Codex | well-specified implementation, verification, independent review *(optional — see below)* |
+| deep-reasoner | second opinion before a risky change; root cause on a clean context |
+| Codex | well-specified implementation, verification, independent review *(optional)* |
 | no action | already done, wrong premise, or blocked on you |
 
-**Two agents**, `deep-reasoner` (opus, high effort) and `fast-worker` (sonnet, low
-effort). Effort is attached to the route rather than to the session, so deep reasoning
-is billed when it is actually chosen instead of on every trivial turn.
+Ships two agents: `deep-reasoner` (opus, high effort) and `fast-worker` (sonnet, low
+effort) — effort follows the route, not the session.
 
-**Guardrails** that exist because their absence is expensive:
+Also enforced: an escalation ladder instead of retry loops, parallel delegation in one
+message, no accepting delegated output without review, and confirmation before broad or
+destructive changes. The `Route:` / `Reason:` header shows up when work happens, not on
+plain questions.
 
-- an escalation ladder, so a failing task escalates instead of looping
-- parallel delegation in one message, and no second agent re-deriving context the first
-  one already has
-- delegated output is never accepted without review — a subagent reporting success is a
-  claim, not a verification
-- confirmation required before broad, risky, or destructive changes
-
-**A quieter response format.** The `Route:` / `Reason:` header appears when files change
-or work is delegated, and is skipped for plain questions.
-
-## Codex is optional
-
-The Codex route lights up only if the [openai-codex](https://github.com/openai/codex-plugin-cc)
-plugin is installed. The activation hook checks at session start and tells the model
-which case it is in, so nothing breaks if you do not use Codex — that work routes to the
-lead instead, and you will not be told to run commands you do not have.
+**Codex** is optional. That route lights up only if the
+[openai-codex](https://github.com/openai/codex-plugin-cc) plugin is installed; without
+it the work routes to the lead and you are never told to run commands you do not have.
 
 ## Statusline badge
 
-Optional. Renders `[ORCHESTRA]`, or `[ORCHESTRA+codex]` when the Codex route is live —
-a one-glance answer to "did the rules actually load?"
+Optional `[ORCHESTRA]` / `[ORCHESTRA+codex]` badge. You do not need to find any paths —
+the plugin offers to set it up on your next session.
 
-You do not need to find the path yourself: the activation hook detects a missing
-statusline and offers to configure it, with the correct absolute path for your install,
-on your next session. Accept and it is done.
+Claude Code allows only one statusline, so an existing one is left alone. The
+[caveman](https://github.com/JuliusBrussee/caveman) badge renders alongside rather than
+being crowded out.
 
-Claude Code allows only one `statusLine` command. If you already have one configured,
-orchestra leaves it alone and never asks again. If you use the
-[caveman](https://github.com/JuliusBrussee/caveman) plugin, its badge is rendered
-alongside orchestra's rather than being crowded out.
+## Turning it off
 
-## Customizing
-
-The rules are plain markdown in [`rules/orchestration.md`](rules/orchestration.md), read
-at session start. Fork the repo, edit that file, and reinstall from your fork. There is
-no rule text hidden in the JavaScript.
-
-To silence orchestra without uninstalling, create a flag file in your Claude config
-directory. The rules stop loading and the badge disappears; delete the file to switch
-back on.
-
-PowerShell:
+Create a flag file; delete it to switch back on.
 
 ```powershell
 New-Item -ItemType File "$env:USERPROFILE\.claude\.orchestra-off"   # off
 Remove-Item "$env:USERPROFILE\.claude\.orchestra-off"               # on
 ```
 
-bash / zsh:
-
 ```sh
 touch ~/.claude/.orchestra-off   # off
 rm ~/.claude/.orchestra-off      # on
 ```
 
-A file rather than an environment variable, because Claude Code does not pass the
-launching shell's environment through to hook subprocesses — `ORCHESTRA_OFF=1 claude`
-looks like it should work and silently does not. The variable is still honoured if your
-setup does export it into hooks, but the flag file is the switch that always works.
+## Customizing
+
+The rules are plain markdown in [`rules/orchestration.md`](rules/orchestration.md) —
+no rule text hidden in the JavaScript. Fork, edit that file, install from your fork.
 
 ## Developing
 
-A local marketplace install **copies** the source into a versioned cache directory —
-it does not link it. Editing your working tree therefore changes nothing about the
-running plugin until you reinstall:
+Installing from a local directory **copies** the source into a versioned cache; it does
+not link it. Your edits do nothing until you reinstall:
 
 ```
 /plugin marketplace update orchestra
@@ -113,14 +80,8 @@ running plugin until you reinstall:
 /reload-plugins
 ```
 
-This is easy to get wrong in a way that hides itself, so the activation line reports the
-running version (`ORCHESTRA ACTIVE v1.1.0`). If that does not match the version in
-`.claude-plugin/plugin.json`, the installed copy is stale and nothing you edited is live.
-
-For the same reason, point `statusLine` at the **installed** copy rather than your
-working tree. Running one from the cache and the other from source produces two
-different code paths that silently disagree. When a version bump moves the cache path,
-the activation hook notices the stale path and offers the new one.
+The activation line reports the running version (`ORCHESTRA ACTIVE v1.1.0`). If it does
+not match `.claude-plugin/plugin.json`, your install is stale.
 
 ## Layout
 
