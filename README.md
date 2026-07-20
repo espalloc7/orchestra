@@ -51,19 +51,20 @@ Claude Code allows only one statusline, so an existing one is left alone. The
 [caveman](https://github.com/JuliusBrussee/caveman) badge renders alongside rather than
 being crowded out.
 
-## Turning it off
+## Commands
 
-Create a flag file; delete it to switch back on.
-
-```powershell
-New-Item -ItemType File "$env:USERPROFILE\.claude\.orchestra-off"   # off
-Remove-Item "$env:USERPROFILE\.claude\.orchestra-off"               # on
+```
+/orchestra:status   version, on/off state, install path, statusline health, codex route
+/orchestra:off      stop loading the rules
+/orchestra:on       resume
 ```
 
-```sh
-touch ~/.claude/.orchestra-off   # off
-rm ~/.claude/.orchestra-off      # on
-```
+`status` is the first thing to run when something seems off — it catches the two
+failures that hide themselves: a stale install, and a statusline running from a
+different copy of the plugin than the rules.
+
+On and off take effect at the next session start, since the rules are injected when a
+session begins.
 
 ## Customizing
 
@@ -81,8 +82,17 @@ not link it. Your edits do nothing until you reinstall:
 /reload-plugins
 ```
 
-The activation line reports the running version (`ORCHESTRA ACTIVE v1.2.0`). If it does
-not match `.claude-plugin/plugin.json`, your install is stale.
+The activation line reports the running version, and `/orchestra:status` shows it next to
+the install path. If it does not match `.claude-plugin/plugin.json`, your install is
+stale.
+
+```
+node test/run.js
+```
+
+No dependencies. Every case in the suite maps to a bug that actually shipped, and the
+scripts run as real subprocesses against throwaway config directories — verifying a copy
+of the code the failure did not come from is the mistake this suite exists to prevent.
 
 ## Layout
 
@@ -91,12 +101,15 @@ not match `.claude-plugin/plugin.json`, your install is stale.
   plugin.json        manifest + SessionStart hook registration
   marketplace.json   lets this repo serve itself as a marketplace
 agents/              deep-reasoner, fast-worker
+commands/            /orchestra:status, :on, :off
 hooks/
   activate.js        reads the rules, detects Codex, injects both
   state.js           shared: codex detection, on/off flag
   statusline.js      optional badge
 rules/
   orchestration.md   the actual rules — single source of truth
+scripts/orchestra.js CLI behind the commands
+test/run.js          dependency-free suite
 ```
 
 ## License
