@@ -12,20 +12,22 @@ const fs = require('fs');
 const path = require('path');
 const { claudeDir, codexAvailable, orchestraOff } = require('./state');
 
-// Switched off means no badge. A badge claiming orchestra is active while the rules are
-// not loaded is worse than no badge at all.
-if (orchestraOff()) process.exit(0);
-
 const ORCHESTRA_COLOR = '\x1b[38;5;39m'; // blue — distinct from caveman's orange
 const CAVEMAN_COLOR = '\x1b[38;5;172m';
 const RESET = '\x1b[0m';
 
 const parts = [];
 
-parts.push(
-  // ASCII only — a non-ASCII separator renders as mojibake on legacy Windows consoles.
-  ORCHESTRA_COLOR + (codexAvailable() ? '[ORCHESTRA+codex]' : '[ORCHESTRA]') + RESET
-);
+// Switched off hides our own badge only. A badge claiming orchestra is active while the
+// rules are not loaded would be worse than none — but we occupy the single statusLine
+// slot on behalf of every other badge here, so switching orchestra off must not take
+// them down with it.
+if (!orchestraOff()) {
+  parts.push(
+    // ASCII only — a non-ASCII separator renders as mojibake on legacy Windows consoles.
+    ORCHESTRA_COLOR + (codexAvailable() ? '[ORCHESTRA+codex]' : '[ORCHESTRA]') + RESET
+  );
+}
 
 // Optional interop: render the caveman badge if that plugin is active. Absent for
 // everyone else, which is the common case — this must never fail the statusline.
