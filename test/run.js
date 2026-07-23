@@ -124,6 +124,17 @@ test('the codex note does not punt review work back to the user', (f) => {
   assert.match(out, /:status \| :result \| :cancel/, 'job control stays the only user-only mention');
 });
 
+// Regression: row 4 said "implementation you can fully specify", which told the lead to
+// finish the thinking before delegating — and finishing the thinking is the work, so it
+// kept the work. The Codex row must hand off goals, not solved problems, and the rules
+// must name the handoff moment so the drift into lead-direct has a defined stop point.
+test('the codex route hands off goals, not solved problems', (f) => {
+  const out = f.activate();
+  assert.doesNotMatch(out, /implementation you can fully specify/, 'the "fully specify" trap must be gone');
+  assert.match(out, /goal, not a solved problem/, 'the row must reframe Codex around the goal');
+  assert.match(out, /The handoff moment/, 'the rules must name the handoff moment');
+});
+
 test('the route table carries exact subagent identifiers', (f) => {
   const out = f.activate();
   assert.match(out, /orchestra:fast-worker/);

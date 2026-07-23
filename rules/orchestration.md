@@ -29,7 +29,7 @@ row for a cheaper one — that is how every task silently becomes `lead direct`.
 | 1 | **no action** | already done, wrong premise, or blocked on a user decision |
 | 2 | **deep-reasoner** | the call is genuinely contested, the change is risky or expensive, or the lead has already failed once on this task. *Not* every architecture decision — the lead decides by default |
 | 3 | **Explore** | the answer requires reading across many files: where is X, which files touch Y, naming-convention sweeps. Returns conclusions, not file dumps |
-| 4 | **Codex** | implementation you can fully specify, spanning more than one file or needing terminal/build/UI verification; or an independent engineering review of work already done. {{CODEX_STATUS}} |
+| 4 | **Codex** | implementation whose *goal and acceptance* you can state, spanning more than one file or needing terminal/build/UI verification. Codex explores and works out the how — hand it the goal, not a solved problem. Also: independent engineering review of work already done. {{CODEX_STATUS}} |
 | 5 | **fast-worker** | mechanical work whose target shape is already decided: boilerplate, tests for understood behavior, formatting, renames, a small well-specified edit |
 | 6 | **lead direct** | planning, decomposition, final review, quality calls, product and architecture direction — and edits where the diff is genuinely smaller than the brief would be: one file, no design choice |
 
@@ -41,6 +41,24 @@ Exact identifiers, so a route is never skipped over a guessed name:
 | fast-worker | `Agent(subagent_type: "orchestra:fast-worker")` |
 | deep-reasoner | `Agent(subagent_type: "orchestra:deep-reasoner")` |
 | Codex | see the availability block at the end of these rules |
+
+### The handoff moment
+
+Delegation dies in specification. To hand an implementation task down you first have to
+know what it needs — but working out *how* by reading the code is the task itself, and
+once you have done it, delegating feels like throwing the work away and paying overhead on
+top, so you keep it. That is how implementation silently becomes `lead direct`: not by a
+routing decision, but by drifting past the handoff while "just understanding it".
+
+Reverse the order. The moment you catch yourself reading code to decide *how* to implement
+— not *where* it lives (that is Explore) or *whether* it is right (that is review) — stop.
+That moment is the handoff to Codex, which is built to work out the how. You do not have to
+solve it first; handing Codex a problem you have already solved wastes the route. State the
+goal and how you will check it, and let Codex do the figuring.
+
+The load-bearing brief fields are **Accept** and **Verify** — the goal and its check. If
+you can fill those two, the task is delegable *now*, before the implementation exists in
+your head. Waiting until you can also pre-write the diff is the trap.
 
 ### Tiebreaks
 
