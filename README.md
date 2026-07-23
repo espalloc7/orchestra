@@ -47,9 +47,11 @@ up when work happens, not on plain questions.
 it the work routes to the lead and you are never told to run commands you do not have.
 
 When it is installed, the rules hand the lead the one invocation it can actually make —
-the `codex:codex-rescue` subagent. Most `/codex:` commands are marked
-`disable-model-invocation` and are listed separately as yours to type, so the lead stops
-reaching for a route it cannot take.
+the `codex:codex-rescue` subagent. That single subagent covers every Codex job:
+implementation, code review, and adversarial review are all just prompts to it, so the
+lead runs them itself instead of handing the work back to you. The `/codex:` slash
+commands are marked `disable-model-invocation`; the only ones worth typing are job control
+(`:status`, `:result`, `:cancel`) over a job you started yourself.
 
 ## Staying loaded
 

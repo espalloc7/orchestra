@@ -113,6 +113,17 @@ test('the codex route names an invocation the lead can actually make', (f) => {
   assert.match(out, /cannot run them/, 'user-only commands must be marked as such');
 });
 
+// Regression: the note listed /codex:review and /codex:adversarial-review as commands to
+// suggest to the user, which read as a delegation path and had the lead handing review
+// work back to a human instead of running it through codex-rescue. Review and adversarial
+// review are codex-rescue prompts; only job control over a user-started job is user-only.
+test('the codex note does not punt review work back to the user', (f) => {
+  const out = f.withCodex().activate();
+  assert.doesNotMatch(out, /adversarial-review/, 'review commands must not be advertised as a hand-off');
+  assert.match(out, /Never ask the user/, 'must forbid handing Codex work back to the user');
+  assert.match(out, /:status \| :result \| :cancel/, 'job control stays the only user-only mention');
+});
+
 test('the route table carries exact subagent identifiers', (f) => {
   const out = f.activate();
   assert.match(out, /orchestra:fast-worker/);
